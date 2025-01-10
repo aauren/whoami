@@ -1,6 +1,7 @@
-FROM golang:1-alpine as builder
+FROM golang:1-alpine AS builder
 
-RUN apk --no-cache --no-progress add git ca-certificates tzdata make \
+RUN apk --no-cache --no-progress add git ca-certificates tzdata make termshark \
+    tcpdump curl vim bmon wget net-tools less jq traceroute bash strace tshark tcpflow \
     && update-ca-certificates \
     && rm -rf /var/cache/apk/*
 
@@ -15,12 +16,7 @@ COPY . .
 
 RUN make build
 
-# Create a minimal container to run a Golang static binary
-FROM scratch
-
-COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /go/whoami/whoami .
+RUN cp /go/whoami/whoami /whoami
 
 ENTRYPOINT ["/whoami"]
 EXPOSE 80
